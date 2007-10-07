@@ -7,7 +7,6 @@ use base qw/ Bot::Net::Mixin /;
 use Bot::Net::Message;
 use Class::Trigger;
 use Data::Remember POE => Hybrid => [ ] => [ 'Memory' ];
-use Data::Remember::Hybrid;
 use POE qw/ Component::IRC::State /;
 use POE::Declarative;
 use Scalar::Util qw/ reftype /;
