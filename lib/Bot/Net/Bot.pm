@@ -5,7 +5,6 @@ package Bot::Net::Bot;
 use base qw/ Bot::Net::Mixin /;
 
 use Bot::Net::Message;
-use Class::Trigger;
 use Data::Remember POE => Hybrid => [ ] => [ 'Memory' ];
 use POE qw/ Component::IRC::State /;
 use POE::Declarative;
@@ -24,9 +23,6 @@ our @EXPORT = (
     
     # Re-export Data::Remember
     qw/ remember recall forget brain /,
-
-    # Re-export Class::Trigger
-    qw/ add_trigger call_trigger last_trigger_results /,
 
     # Add in our own subs
     qw/ bot setup /,
@@ -172,8 +168,6 @@ sub setup {
     $brain->remember([ 'name' ] => $name);
     $brain->remember([ 'log'  ] => $self->log);
 
-    $self->call_trigger( on_setup => $brain );
-
     POE::Declarative->setup($self, $brain);
 }
 
@@ -227,8 +221,6 @@ on _start => run {
     my $log  = recall 'log';
 
     $log->info("Starting bot $name...");
-
-    $self->call_trigger('on_start');
 
     yield bot 'startup';
 };

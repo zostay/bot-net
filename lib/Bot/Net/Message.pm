@@ -123,7 +123,7 @@ sub message {
     my $self = shift;
 
     if (@_) {
-        $self->_message( join ($OUTPUT_FIELD_SEPARATOR||''), @_ );
+        $self->_message( join $OUTPUT_FIELD_SEPARATOR||'', @_ );
     }
 
     return $self->_message;

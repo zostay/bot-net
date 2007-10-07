@@ -51,28 +51,19 @@ This is the mixin-class for L<Bot::Net> IRC bots. You "inherit" all the features
 
 =head1 METHODS
 
-=head1 register_triggers
+=head1 setup
 
 Adds the IRC component to the bot's memory on setup. 
 
 =cut
 
-sub register_triggers {
-    my $self = shift;
+sub setup {
+    my $self  = shift;
+    my $brain = shift;
 
-    $self->add_trigger( on_setup => sub {
-        my $self  = shift;
-        my $brain = shift;
-
-        $brain->remember(
-            [ 'irc' ] => POE::Component::IRC::State->spawn( alias => 'irc' )
-        );
-    });
-
-    $self->add_trigger( on_start => sub {
-        post irc => register => 'all';
-        post irc => connect  => recall [ config => 'irc_connect' ];
-    });
+    $brain->remember(
+        [ 'irc' ] => POE::Component::IRC::State->spawn( alias => 'irc' )
+    );
 }
 
 =head1 BOT STATES
@@ -97,6 +88,17 @@ The C<EVENT> is a L<Bot::Net::Message> object setup for either a group or privat
 
 =head1 MIXIN STATES
 
+=head2 on _start
+
+Sets up the IRC client.
+
+=cut
+
+on _start => run {
+    post irc => register => 'all';
+    post irc => connect  => recall [ config => 'irc_connect' ];
+};
+
 =head2 on irc_001
 
 Connects to the channels that the bot has been configured to join. This then fires the L</on bot connected> event which indicates that it is now safe to issue IRC commands, if your bot needs to do so.
@@ -112,8 +114,6 @@ on irc_001 => run {
         $log->info("Joining $channel...");
         post irc => join => $channel;
     }
-
-    $self->call_trigger('on_connected');
 
     yield 'bot_connected';
 };

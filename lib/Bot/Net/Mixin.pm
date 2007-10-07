@@ -4,7 +4,6 @@ use warnings;
 package Bot::Net::Mixin;
 use base qw/ Bot::Net::Object POE::Declarative::Mixin /;
 
-use Class::Trigger;
 use Data::Remember POE => 'Memory';
 
 require Exporter;
@@ -27,10 +26,11 @@ Bot::Net::Mixin - build complex objects my mixing components
 
   # Add a counter command to a bot
 
-  sub register_triggers {
-      my $self = shift;
+  sub setup {
+      my $self  = shift;
+      my $brain = shift;
 
-      $self->add_trigger( on_setup => sub { remember counter => 0 } );
+      $brain->remember( [ 'counter' ] => 0 );
   }
   
   on bot command next => run {
@@ -52,7 +52,7 @@ This is the base class for all L<Bot::Net> mixins. It basically provides for a w
 
 =head2 import
 
-Exports anything the module lists in it's C<@EXPORT> variable and calls the L</register_triggers> method of the mixin, if such a method exists.
+Exports anything the module lists in it's C<@EXPORT> variable, if such a method exists.
 
 =cut
 
@@ -62,24 +62,24 @@ sub import {
 
     $self->export_to_level(1, undef);
 
-    if (my $triggers = $self->can('register_triggers')) {
-        $triggers->($caller);
-    }
+    my $mixins = Bot::Net::Mixin::_mixins_for_package($caller);
+    push @$mixins, $self;
 
     $self->export_poe_declarative_to_level(1);
+}
+
+sub _mixins_for_package {
+    my $package = shift;
+
+    no strict 'refs';
+    return ${ $package . '::_BOT_NET_MIXINS' } ||= [];
 }
 
 =head1 MIXIN IMPLEMENTATIONS
 
 A mixin may implement whatever POE states it wishes to using the L<POE::Declarative> interface. Those states will be imported into the calling package.
 
-A mixin may also want to implement one or more triggers. It does this by providing a L</register_triggers> method which adds a trigger handler for one of the available triggers.
-
-=head2 register_triggers CLASS
-
-This is called when the mixin is used and passed the name of the package that is using this mixin. Your class may then implement any of the triggers provided by that class. The triggers available will depend upon the mixins used.
-
-Triggers may be offered by your mixin or handled by your mixin. The triggers are defined using L<Class::Trigger>.
+If a mixin needs to perform any setup prior to L<POE::Kernel> startup, it may be do so by implementing a C<setup> method. It will be passed a single argument, which is the L<Data::Remember> brain object that will be stored in the heap of the session being created. In general, however, your mixins can probably get away with performing initial setup in the C<_start> state.
 
 =head1 AUTHORS
 
