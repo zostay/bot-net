@@ -18,7 +18,7 @@ our @EXPORT = ();
 
 Bot::Net::Mixin::Bot::IRC - mixin class for building IRC bots
 
-=ehad1 SYNOPSIS
+=head1 SYNOPSIS
 
         $userhost, $channel, $message);
   # Build an Eliza chatbot for IRC
