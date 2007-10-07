@@ -74,13 +74,13 @@ The following states are avaiable for your bot to implement.
 
 This state is emitted as soon as the bot has connected to the server and the server has passed back a message. This means it is now safe to communicate with the server.
 
-=head2 bot message_to_group EVENT
+=head2 on bot message_to_group EVENT
 
 This state occurs when the bot observes a message sent to a channel it is in, but the message is not directed at the bot (i.e., is not prefixed with "MyNick:").
 
 The C<EVENT> is a L<Bot::Net::Message> object setup to contain the group message.
 
-=head2 bot message_to_me EVENT
+=head2 on bot message_to_me EVENT
 
 This state occurs when either the bot observes a message sent to a channel that it is in that has been prefixed with "MyNick:" or a private message was sent directly to the bot.
 
