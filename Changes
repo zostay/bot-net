@@ -1,0 +1,28 @@
+Revision history for Perl module Bot::Net
+
+0.0.1 Sun Oct 7 20:07:47 2007
+    * Initial release of Bot::Net.
+    * This is a refactoring of a tool I used internally to build a nice bot net
+      for synchronization. It still has some left overs from the old country
+      that need to be brought into the new system fully, but the new system
+      works and is superior to the old one.
+    * Bot::Net class as the central singleton.
+    * Bot::Net::Bot class as the main mixin implementation for building bots.
+    * Bot::Net::Config class to load and find configuration files.
+    * Bot::Net::Log class to handle loging via Log::Log4perl
+    * Bot::Net::Message class for encapsulating bot messages.
+    * Bot::Net::Mixin::Bot::IRC class for making IRC bots.
+    * Bot::Net::Mixin class for building mixins to add features to bots and
+      servers.
+    * Bot::Net::Object class to provide basic methods all over the place.
+    * Bot::Net::Script class for command-line interface.
+    * Bot::Net::Script::Bot class is broken (not fully refactored).
+    * Bot::Net::Script::Help class to provide CLI help.
+    * Bot::Net::Script::Net class to build scaffolding for Bot::Net apps.
+    * Bot::Net::Script::Run class to run bots and servers.
+    * Bot::Net::Script::Server class is broken (not fully refactored).
+    * Bot::Net::Server class to build IRC servers (not fully refactored).
+    * Bot::Net::Util class for miscellaneous stuff, currently contains a utility
+      for parsing bot commands.
+    * Comes with tests for dependencies, POD errors, and POD coverage.
+    * Comes with a test application that is not yet complete.
