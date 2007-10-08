@@ -2,12 +2,10 @@ use strict;
 use warnings;
 
 package Bot::Net::Bot;
-use base qw/ Bot::Net::Mixin /;
+
+use Bot::Net::Mixin;
 
 use Bot::Net::Message;
-use Data::Remember POE => Hybrid => [ ] => [ 'Memory' ];
-use POE qw/ Component::IRC::State /;
-use POE::Declarative;
 use Scalar::Util qw/ reftype /;
 
 require Exporter;
@@ -153,7 +151,7 @@ sub setup {
         or die qq{Bot startup failed, }
               .qq{no configuration found for $name: $config_file};
 
-    my $brain = brain->new_heap;
+    my $brain = brain->new_heap( Hybrid => [] => 'Memory' );
 
     $brain->register_brain(
         config => [ YAML => file => $config_file ]
@@ -167,6 +165,18 @@ sub setup {
 
     $brain->remember([ 'name' ] => $name);
     $brain->remember([ 'log'  ] => $self->log);
+
+    # Setup any mixins
+    my $mixins = Bot::Net::Mixin::_mixins_for_package($class);
+    for my $mixin (@$mixins) {
+        
+        # Don't setup this one
+        next if $mixin->isa('Bot::Net::Bot');
+
+        if (my $method = $mixin->can('setup')) {
+            $method->($self, $brain);
+        }
+    }
 
     POE::Declarative->setup($self, $brain);
 }

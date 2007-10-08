@@ -2,11 +2,10 @@ use strict;
 use warnings;
 
 package Bot::Net::Mixin::Bot::IRC;
-use base qw/ Bot::Net::Mixin /;
 
-use Data::Remember POE => 'Memory';
+use Bot::Net::Mixin;
+
 use POE qw/ Component::IRC::State /;
-use POE::Declarative;
 use Scalar::Util qw/ reftype /;
 
 require Exporter;
