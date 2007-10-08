@@ -1,0 +1,29 @@
+abstract: run your very own IRC bot net
+author: Andrew Sterling Hanenkamp C<< <hanenkamp@cpan.org> >>
+distribution_type: module
+generated_by: Module::Install version 0.64
+license: perl
+name: Bot-Net
+no_index: 
+  directory: 
+    - examples
+    - inc
+    - t
+requires: 
+  App::CLI: 0
+  App::CLI::Command: 0
+  App::CLI::Command::Help: 0
+  Class::Accessor::Fast: 0
+  Class::Data::Inheritable: 0
+  Data::Remember: 0.05
+  File::Find::Rule: 0
+  Hash::Merge: 0
+  Log::Log4perl: 0
+  POE: 0
+  POE::Declarative: 0.005
+  POE::Declarative::Mixin: 0
+  Readonly: 0
+  Regexp::Common: 0
+  UNIVERSAL::require: 0
+  YAML::Syck: 0
+version: 0.0.1
