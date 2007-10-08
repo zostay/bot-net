@@ -17,18 +17,19 @@ Bot::Net - run your very own IRC bot net
 
 =head1 SYNOPSIS
 
-TODO FIXME XXX Implement these really cool looking commands...
-
 If you're just using a L<Bot::Net>:
 
-  botnet net --name MyBotNet
   cd MyBotNet
-  bin/botnet bot create --name LoadBot
-  bin/botnet bot create --name SaveBot
-  bin/botnet bot create --name CopyBot
-  bin/botnet spawn
+  bin/botnet run --server Main
+  bin/botnet run --bot SomeBot
 
-If you're developing a new bot or something:
+To create a new L<Bot::Net> application:
+
+  bin/botnet net --name MyBotNet
+
+TODO XXX FIXME Document automatic creation of new bots and servers...
+
+If you're developing a new bot or something, you might find these useful:
 
   Bot::Net->log->debug("Debug message.");
   Bot::Net->log->error("Error message.");
@@ -39,7 +40,7 @@ If you're developing a new bot or something:
 
 B<EXPERIMENTAL:> This module has just barely left the proof-of-concept phase. Much of the API is fluid and changing. If you're interested in contributing, please contact me at my email address at the bottom.
 
-Ever wanted to run your very own illicit botnet? Uh, I'd really rather you didn't use this toolkit to do that. However, it wouldn't be a bad way to go. 
+A nice way to create bots, networks of bots, and servers that run them. Currently, this system only provides tools for building IRC bots, but additional protocols could be added in the future. The aim is not to tie the system to any one architecture for the bots, but provide an easy way to build them and verify that they do what you want.
 
 =head2 GOALS
 
@@ -49,15 +50,23 @@ The aim of this system is to provide a tool for creating a botnet for handling p
 
 =item *
 
-Tools for managing the creation and lifecycle of all your bots.
+Provide easy to build and easy to understand mechanisms for building semi-autonomous agent-based systems (bots).
+
+=item *
+
+Automatically build the scaffolding for a L<Bot::Net> application, automatically create stubs for bots and servers, and generally give you some tools to get started quickly.
+
+=item *
+
+Provide a declarative syntax for creating bots and bot components.
+
+=item *
+
+Tools for initializing and managing the lifecycle of all your bots.
 
 =item *
 
 A server environment for helping you run your bots on one or more hosts that can communicate with one another.
-
-=item *
-
-A simplified syntax for creating bots.
 
 =item *
 
@@ -67,11 +76,13 @@ A verification system for telling you whether or not your bots will talk to each
 
 =head2 WHY?
 
-First, because breaking certain tasks into small hunks that can be handled by semi-autonomous bots is a handy way to think about some problems. 
+First, because breaking certain tasks into small hunks that can be handled by semi-autonomous agentsis a handy way to think about some problems. 
 
 The original problem I wrote this system for is to handle the synchronization of data between lots of hosts. I had bots for pulling bits of data from each host, other bots for pushing bits of data back to each host, bots for pulling data from one host and pushing to another, bots for filtering the data so that it's in the correct format, etc. 
 
 It quickly became a pain, so I built this to take away the pain.
+
+Previously, I wrote another system, L<FleetConf>, to handle a very similar task. However, I am not very happy with how that turned out, so learning from my work there, I've built this system.
 
 =head1 THIS OBJECT
 
