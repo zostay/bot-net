@@ -20,7 +20,7 @@ requires 'Regexp::Common';
 requires 'UNIVERSAL::require';
 requires 'YAML::Syck';
 
-no_index directory => qw/ examples /;
+no_index directory => qw{ examples };
 
 install_script('bin/botnet');
 
