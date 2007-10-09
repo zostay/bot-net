@@ -62,7 +62,7 @@ sub run {
     $self->_install_botnet_binary;
     $self->_write_makefile;
     $self->_write_config_file;
-    $self->_copy_log4perl_config_file;
+    $self->_create_log4perl_config_file;
 }
 
 sub _make_directories {
@@ -134,18 +134,26 @@ sub _write_config_file {
     DumpFile($config_file, { ApplicationClass => $self->mod_name });
 }
 
-sub _copy_log4perl_config_file {
+sub _create_log4perl_config_file {
     my $self   = shift;
     my $bin    = $FindBin::Bin;
 
-    # Get ready to copy
-    my $source_file = File::Spec->catfile($bin, '..', 'etc', 'log4perl.conf');
+    # Get ready to create
     my $dest_file   = File::Spec->catfile(
         $self->dist_name, 'etc', 'log4perl.conf');
+    open my $log4perl, '>', $dest_file 
+        or die "Could not write to $dest_file: $!";
 
-    # Copy and make it executable
-    print "Copying in $dest_file...\n";
-    copy($source_file, $dest_file);
+    print "Creating $dest_file...\n";
+    print $log4perl <<'END_OF_LOG4PERL_CONF';
+log4perl.rootLogger=DEBUG, SCREEN
+
+log4perl.appender.SCREEN=Log::Log4perl::Appender::Screen
+log4perl.appender.SCREEN.stderr=0
+
+log4perl.appender.SCREEN.layout=PatternLayout
+log4perl.appender.SCREEN.layout.ConversionPattern=[%d] %c - %m%n
+END_OF_LOG4PERL_CONF
 }
 
 sub _directories {
