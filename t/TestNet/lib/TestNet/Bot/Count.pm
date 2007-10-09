@@ -2,7 +2,6 @@ use strict;
 use warnings;
 
 package TestNet::Bot::Count;
-use base qw/ Bot::Net::Object /;
 
 use Bot::Net::Bot;
 use Bot::Net::Mixin::Bot::IRC;

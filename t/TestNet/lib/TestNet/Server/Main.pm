@@ -2,8 +2,8 @@ use strict;
 use warnings;
 
 package TestNet::Server::Main;
-use base qw/ Bot::Net::Object /;
 
 use Bot::Net::Server;
+use Bot::Net::Mixin::Server::IRC;
 
 1;
