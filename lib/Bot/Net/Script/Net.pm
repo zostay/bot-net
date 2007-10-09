@@ -166,6 +166,7 @@ sub _directories {
         lib/__APP__/Bot
         lib/__APP__/Server
         log
+        t
         var/bot
         var/server
     };
