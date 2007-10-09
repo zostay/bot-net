@@ -110,6 +110,10 @@ sub import {
 
     $class->export_to_level(1, undef);
     $class->export_poe_declarative_to_level;
+
+    my $package = caller;
+    no strict 'refs';
+    push @{ $package . '::ISA' }, qw/ Bot::Net::Object /;
 }
 
 =head2 bot
@@ -133,8 +137,6 @@ You may choose to use it or not.
 sub bot($) { 'bot_'.shift }
 
 =head1 setup
-
-  MyBotNet::Bot::BotName->start;
 
 This method is called to tell the bot to startup. It finds all the mixins that have been added into the class and calls the L</setup> method for each.
 
