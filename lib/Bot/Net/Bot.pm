@@ -229,18 +229,6 @@ Bots may emit this state to ask the protocol client and all resources attached t
 
 This is called (synchronously) during teh L</on _stop> handler immediately before shutdown to handle any last second clean up.
 
-=head1 TRIGGERS
-
-These triggers may be handled by mixin trigger handlers.
-
-=head2 on_setup BRAIN
-
-This is called before the POE kernel has started running. It is passed a reference to the brain plugin that will be stored in the session heap. Instead of calling the functional interface of L<Data::Remember>, mixins will need to make method calls instead (and make sure that the que's past are already normalized into arrays).
-
-=head2 on_start
-
-Called just after the kernel has started. The bot should be fully initialized by the time this trigger is called.
-
 =head1 MIXIN STATES
 
 The base mixin handles the following states.
