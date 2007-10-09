@@ -131,7 +131,10 @@ sub _write_config_file {
     my $config_file = File::Spec->catfile($self->dist_name, 'etc/net.yml');
 
     print "Creating $config_file...\n";
-    DumpFile($config_file, { ApplicationClass => $self->mod_name });
+    DumpFile($config_file, { 
+        ApplicationClass => $self->mod_name,
+        ApplicationName => $self->mod_name,
+    });
 }
 
 sub _create_log4perl_config_file {
