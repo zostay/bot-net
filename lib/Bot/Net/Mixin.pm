@@ -98,6 +98,14 @@ sub _mixins_for_package {
     return ${ $package . '::_BOT_NET_MIXINS' } ||= [];
 }
 
+=head2 default_configuration PACKAGE
+
+This is used to build the default configuration file when creating a new bot or server using the L<botnet> script and used by L<Bot::Net::Test> to help build the base test bot or test server configuration.
+
+A mixin should override this to return a reference to a hash containing any default values it recommends or requires for bot configuration. It will be called as a class level method and passed the name of the C<PACKAGE> that the mixin is being used to build:
+
+  MyBotNet::Mixin::Bot::PasteBot->default_configuration('MyBotNet::Bot::FancyPaster');
+
 =head1 MIXIN IMPLEMENTATIONS
 
 A mixin may implement whatever POE states it wishes to using the L<POE::Declarative> interface. Those states will be imported into the calling package.

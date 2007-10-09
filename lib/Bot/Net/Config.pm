@@ -10,8 +10,6 @@ use Hash::Merge qw/ merge /;
 use Readonly;
 use YAML::Syck qw/ LoadFile DumpFile /;
 
-Readonly our $CONFIG_FILE => "$FindBin::Bin/../etc/config.yml";
-
 =head1 NAME
 
 Bot::Net::Config - the configuration for your bot net

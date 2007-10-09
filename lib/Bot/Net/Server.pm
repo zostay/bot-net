@@ -87,15 +87,29 @@ sub setup {
     my $name = Bot::Net->short_name_for_server($class);
     my $config_file = Bot::Net->config->server_file($name);
 
-    -f $config_file
-        or die qq{Server startup failed, }
-              .qq{no configuration found for $name: $config_file};
+    my $config;
+    { 
+        no strict 'refs';
+        $config = ${ $class . '::CONFIG' } || $config_file;
+    }
 
     my $brain = brain->new_heap( Hybrid => [] => 'Memory' );
 
-    $brain->register_brain(
-        config => [ YAML => file => $config_file ]
-    );
+    # Configuration is defined in the package itself (mostly for testing)
+    if (ref $config) {
+        $brain->remember( [ 'config' ] => $config );
+    }
+
+    # Use the YAML config file
+    else {
+        -f $config_file
+            or die qq{Server startup failed, }
+                .qq{no configuration found for $name: $config_file};
+
+        $brain->register_brain(
+            config => [ YAML => file => $config_file ]
+        );
+    }
 
     if (my $state_file = $brain->recall([ config => 'state_file' ])) {
         $brain->register_brain(
@@ -121,13 +135,41 @@ sub setup {
     POE::Declarative->setup($self, $brain);
 }
 
+=head2 default_configuration PACKAGE
+
+Returns a base configuration appropriate for all servers.
+
+=cut
+
+sub default_configuration {
+    my $class   = shift;
+    my $package = shift;
+
+    my $filename = join '/', split /::/, 
+        Bot::Net->short_name_for_server($package);
+
+    return {
+        state_file => 'var/server/'.$filename.'.db',
+    };
+}
+
 =head1 SERVER STATES
 
 These are additional states your server (or server mixin) may choose to implement that are provided to your server.
 
 =head2 on server startup
 
-This is yielded at the end of the C<_start> state for the L<POE> session. Your server should perform any initialization needed here.
+This is yielded at the end of the L</on _start> handler for the L<POE> session. Your server should perform any initialization needed here.
+
+=head2 on server quit
+
+A server should emit this state when it wants the server to disconnect and shutdown. If all mixins are implemented correctly, they should listen for this state and close all resources, which should result in the server going into the L</on _stop> state and exiting shortly after emitting this state. (If they are not, the server might just be stuck alive and have to be killed externally.)
+
+This should be used by protocol mixins to implement the shutdown sequence for their listening ports, open files, etc.
+
+=head2 on server shutdown
+
+This is called synchronously at the end of the L</on _stop> handler for the L<POE> session. 
 
 =head1 POE STATES
 
@@ -167,6 +209,16 @@ on _default => run {
     }
     recall('log')->debug($msg);
     return 0;    # Don't handle signals.
+};
+
+=head2 on _stop
+
+This calls (synchronously) the L</on server shutdown> state, to handle any final clean up before quitting.
+
+=cut
+
+on _stop => run {
+    call get(SESSION) => server 'shutdown';
 };
 
 =head1 SEE ALSO

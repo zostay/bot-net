@@ -60,6 +60,38 @@ sub setup {
     );
 }
 
+=head2 default_configuration PACKAGE
+
+Returns a base configuration for an IRC bot.
+
+=cut
+
+sub default_configuration {
+    my $class   = shift;
+    my $package = shift;
+
+    my $name = Bot::Net->short_name_for_bot($class);
+    $name =~ s/\W+/_/g;
+
+    my $default_channel = Bot::Net->config->net('ApplicationName');
+    $default_channel =~ s/\W+/_/g;
+
+    return {
+        irc_connect => {
+            nick     => $name,
+            username => lc $name,
+            ircname  => Bot::Net->short_name_for_bot($class),
+
+            server   => 'localhost',
+            port     => 6667,
+
+            flood    => 1,
+        },
+        
+        channels => [ '#'.$default_channel ],
+    };
+}
+
 =head1 BOT STATES
 
 The following states are avaiable for your bot to implement.
@@ -436,6 +468,16 @@ on reply_to_general => run {
     else {
         yield send_to => $event->sender_nick => $message;
     }
+};
+
+=head2 on bot quit
+
+This causes the IRC client to close down the connection and quit.
+
+=cut
+
+on bot_quit => run {
+    post irc => quit => 'Quitting.';
 };
 
 =head1 AUTHORS

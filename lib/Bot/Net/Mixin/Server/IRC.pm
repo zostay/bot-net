@@ -49,6 +49,28 @@ sub setup {
     ));
 }
 
+=head2 default_configuration PACKAGE
+
+Returns a base configuration for an IRC server daemon.
+
+=cut
+
+sub default_configuration {
+    my $class   = shift;
+    my $package = shift;
+
+    return {
+        ircd_config => {
+            servername => lc Bot::Net->short_name_for_server($package) . '.irc',
+            nicklen    => 15,
+            network    => Bot::Net->config->new('ApplicationName'),
+        },
+        listeners => [
+            { port => 6667 },
+        ],
+    };
+}
+
 =head1 POE STATES
 
 =head2 on _start
@@ -86,6 +108,16 @@ on _start => run {
     }
 
     undef;
+};
+
+=head2 on server quit
+
+This causes the IRC daemon to close all connections and stop listening.
+
+=cut
+
+on server_quit => run {
+    recall('ircd')->shutdown;
 };
 
 =head1 SEE ALSO

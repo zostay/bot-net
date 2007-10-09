@@ -149,15 +149,29 @@ sub setup {
     my $name = Bot::Net->short_name_for_bot($class);
     my $config_file = Bot::Net->config->bot_file($name);
 
-    -f $config_file 
-        or die qq{Bot startup failed, }
-              .qq{no configuration found for $name: $config_file};
+    my $config;
+    { 
+        no strict 'refs';
+        $config = ${ $class . '::CONFIG' } || $config_file;
+    }
 
     my $brain = brain->new_heap( Hybrid => [] => 'Memory' );
 
-    $brain->register_brain(
-        config => [ YAML => file => $config_file ]
-    );
+    # Configuration is defined in the package itself (mostly for testing)
+    if (ref $config) {
+        $brain->remember( [ 'config' ] => $config );
+    }
+
+    # Use the YAML config file
+    else {
+        -f $config_file
+            or die qq{Bot startup failed, }
+                .qq{no configuration found for $name: $config_file};
+
+        $brain->register_brain(
+            config => [ YAML => file => $config_file ]
+        );
+    }
 
     if (my $state_file = $brain->recall([ config => 'state_file' ])) {
         $brain->register_brain(
@@ -183,11 +197,37 @@ sub setup {
     POE::Declarative->setup($self, $brain);
 }
 
+=head2 default_configuration PACKAGE
+
+Returns a base configuration appropriate for all bots.
+
+=cut
+
+sub default_configuration {
+    my $class   = shift;
+    my $package = shift;
+
+    my $filename = join '/', split /::/,
+        Bot::Net->short_name_for_server($package);
+
+    return {
+        state_file => 'var/server/'.$filename.'db',
+    };
+}
+
 =head1 BOT STATES
 
 =head2 on bot startup
 
 Bots should implement this event to perform any startup tasks. This is bot-specific and mixins should not do anything with this event.
+
+=head2 on bot quit
+
+Bots may emit this state to ask the protocol client and all resources attached to the bot to close. If all mixins are implemented correctly, this should very quickly result in the bot entering the L</on _stop> state and L</on bot shutdown>. (If not, the bot may be stuck in a sort of zombie state unable to die.)
+
+=head2 on bot shtudown
+
+This is called (synchronously) during teh L</on _stop> handler immediately before shutdown to handle any last second clean up.
 
 =head1 TRIGGERS
 
@@ -266,6 +306,17 @@ on _default => run {
     $log->debug("$event ". join( ' ', @output ));
     return 0;    # Don't handle signals.
 };
+
+=head2 on _stop
+
+This calls (synchronously) the L</on bot shutdown> state, to handle any final clean up before quitting.
+
+=cut
+
+on _stop => run {
+    call get(SESSION) => bot 'shutdown';
+};
+
 
 =head1 AUTHORS
 
