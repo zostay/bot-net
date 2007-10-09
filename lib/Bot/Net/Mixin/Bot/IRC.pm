@@ -8,21 +8,16 @@ use Bot::Net::Mixin;
 use POE qw/ Component::IRC::State /;
 use Scalar::Util qw/ reftype /;
 
-require Exporter;
-push our @ISA, 'Exporter';
-
-our @EXPORT = ();
-
 =head1 NAME
 
 Bot::Net::Mixin::Bot::IRC - mixin class for building IRC bots
 
 =head1 SYNOPSIS
 
-        $userhost, $channel, $message);
   # Build an Eliza chatbot for IRC
   use strict;
   use warnings;
+  package MyBotNet::Bot::Eliza;
 
   use Bot::Net::Bot;
   use Bot::Net::Mixin::Bot::IRC;
