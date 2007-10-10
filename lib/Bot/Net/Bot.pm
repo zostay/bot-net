@@ -287,6 +287,9 @@ on _default => run {
                 push ( @output, "{", join ( ", ", %$_ ), "}" );
                 last SWITCH;
             }
+            unless ( defined $_ ) {
+                $_ = '';
+            }
             push ( @output, "'$_'" );
         }
         $arg_number++;
