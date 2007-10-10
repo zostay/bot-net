@@ -155,8 +155,6 @@ sub run_test {
     my $class = shift;
     my $test  = caller;
 
-    sleep 2;
-
     my @configs;
     for my $mixin (@{ Bot::Net::Mixin::_mixins_for_package($test) }) {
         push @configs, $mixin->default_configuration($test)
@@ -209,6 +207,8 @@ on _start => run {
         Bot::Net::Test->servers->{ $server } = $wheel;
     }
 
+    # TODO This is ugly, need a way to get reports from the servers about
+    # readiness rather than wait and pray we waited long enough.
     sleep 2;
 
     for my $bot (keys %{ Bot::Net::Test->bots }) {
@@ -229,6 +229,8 @@ on _start => run {
         Bot::Net::Test->bots->{ $bot } = $wheel;
     }
 
+    # TODO This is ugly, need a way to get reports from the bots about
+    # readiness rather than wait and pray we waited long enough.
     sleep 2;
 
     delay 'shutdown_unless_something_happened', 30;
@@ -270,9 +272,6 @@ on child_reaper => run {
     $message   .= " (core dumped)"    if $dump;
 
     recall('log')->info($message);
-
-    use Data::Dumper;
-    recall('log')->info(Dumper(get KERNEL));
 };
 
 =head2 on shutdown_unless_something_happened
