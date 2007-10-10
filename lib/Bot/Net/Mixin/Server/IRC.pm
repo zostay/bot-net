@@ -117,7 +117,11 @@ This causes the IRC daemon to close all connections and stop listening.
 =cut
 
 on server_quit => run {
+    recall('log')->warn("Shutting down the server.");
     recall('ircd')->shutdown;
+
+    post ircd => unregister => 'all';
+    forget 'ircd';
 };
 
 =head1 SEE ALSO

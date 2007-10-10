@@ -477,7 +477,11 @@ This causes the IRC client to close down the connection and quit.
 =cut
 
 on bot_quit => run {
+    recall('log')->warn("Quitting the IRC connection.");
     post irc => quit => 'Quitting.';
+
+    post irc => unregister => 'all';
+    forget 'irc';
 };
 
 =head1 AUTHORS
