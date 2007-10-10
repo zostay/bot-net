@@ -116,7 +116,7 @@ sub _write_makefile {
     print $makefh <<"END_OF_MAKEFILE_PL";
 use inc::Module::Install;
 
-name     '@{[$self->mod_name]}'
+name     '@{[$self->mod_name]}';
 version  '0.01';
 
 requires 'Bot::Net' => '@{[$Bot::Net::VERSION]}';
