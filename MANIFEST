@@ -44,3 +44,5 @@ t/TestNet/lib/TestNet/Bot/Count.pm
 t/TestNet/lib/TestNet/Server/Main.pm
 t/TestNet/Makefile.PL
 t/TestNet/t/count.t
+t/TestNet/var/bot/.keep
+t/TestNet/var/server/.keep
