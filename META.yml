@@ -20,10 +20,11 @@ requires:
   Hash::Merge: 0
   Log::Log4perl: 0
   POE: 0
-  POE::Declarative: 0.005
+  POE::Declarative: 0.006
   POE::Declarative::Mixin: 0
   Readonly: 0
   Regexp::Common: 0
   UNIVERSAL::require: 0
   YAML::Syck: 0
+tests: t/*.t t/*/t/*.t
 version: 0.0.1

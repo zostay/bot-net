@@ -13,7 +13,7 @@ requires 'File::Find::Rule';
 requires 'Hash::Merge';
 requires 'Log::Log4perl';
 requires 'POE';
-requires 'POE::Declarative'         => 0.005;
+requires 'POE::Declarative'         => 0.006;
 requires 'POE::Declarative::Mixin';
 requires 'Readonly';
 requires 'Regexp::Common';
@@ -23,6 +23,8 @@ requires 'YAML::Syck';
 no_index directory => qw{ examples };
 
 install_script('bin/botnet');
+
+tests('t/*.t t/*/t/*.t');
 
 auto_install;
 WriteMakefile;
