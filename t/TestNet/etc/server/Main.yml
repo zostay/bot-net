@@ -5,10 +5,5 @@ ircd_config:
 
 state_file: var/server/Main.db
 
-masks:
- - mask: testmask
-   password: test123
-   spoof: cpan.org
-
 listeners:
  - port: 6667
