@@ -96,7 +96,7 @@ sub run {
     my @mixins = @{ $self->{mixins} || [] };
     my @mixin_classes = (
         'Bot::Net::Server',
-        map { Bot::Net->net_class('Mixin', 'Server', $_) } @mixins
+        map { 'Bot::Net::Mixin::Server::'.$_ } @mixins
     );
 
     $self->mixin_classes( \@mixin_classes );
@@ -178,10 +178,11 @@ sub _create_server_config {
     }
 
     else {
-        print "Creating a new ",$self->server_conf,"...\n";
+        print "Creating ",$self->server_conf,"...\n";
 
         my @configs;
         for my $mixin_class (@{ $self->mixin_classes || [] }) {
+            $mixin_class->require;
             if (my $method = $mixin_class->can('default_configuration')) {
                 push @configs, $method->($mixin_class, $self->server_class);
             }
