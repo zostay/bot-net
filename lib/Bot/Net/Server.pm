@@ -204,6 +204,9 @@ on _default => run {
                 $msg .= "{". join ( ", ", %$_ ). "} ";
                 last SWITCH;
             }
+            unless (defined $_) {
+                $_ = '';
+            }
             $msg .= "'$_' ";
         }
     }
