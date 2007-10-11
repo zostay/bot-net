@@ -211,7 +211,7 @@ sub default_configuration {
         Bot::Net->short_name_for_server($package);
 
     return {
-        state_file => 'var/server/'.$filename.'db',
+        state_file => 'var/server/'.$filename.'.db',
     };
 }
 
