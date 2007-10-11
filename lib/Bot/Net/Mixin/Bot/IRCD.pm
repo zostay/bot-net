@@ -5,6 +5,8 @@ package Bot::Net::Mixin::Bot::IRCD;
 
 use Bot::Net::Mixin;
 
+use Scalar::Util qw/ reftype /;
+
 =head1 NAME
 
 Bot::Net::Mixin::Bot::IRCD - mixin class for building IRC daemon bots
@@ -95,7 +97,10 @@ sub default_configuration {
     return {
         alias        => $name,
 
-        spoofed_nick => $name,
+        spoofing     => {
+            nick    => $name,
+            ircname => $name,
+        },
 
         channels     => [ '#'.$default_channel ],
     };
@@ -132,17 +137,20 @@ It ends by firing the L</on bot connected> state.
 =cut
 
 on _start => run {
-    my $alias    = recall 'alias';
-    my $my_nick  = recall 'spoofed_nick';
-    my $channels = recall 'channels';
+    my $alias    = recall [ config => 'alias' ];
+    my $spoofed  = recall [ config => 'spoofing' ];
+    my $channels = recall [ config => 'channels' ];
 
     get(KERNEL)->alias_set($alias) if $alias;
 
+    recall('log')->info('Setting up nick spoofing as '
+        .$spoofed->{nick});
     post ircd => register => 'all'; # TODO limit this to a subset
-    post ircd => add_spoofed_nick => { nick => $my_nick };
+    post ircd => add_spoofed_nick => $spoofed;
 
-    for my $channel (@{ $channels }) {
-        post ircd => daemon_cmd_join => $my_nick, $channel;
+    for my $channel (@{ $channels || [] }) {
+        recall('log')->info('Joining '.$channel);
+        post ircd => daemon_cmd_join => $spoofed->{nick}, $channel;
     }
 
     yield 'bot_connected';
@@ -159,7 +167,7 @@ on ircd_daemon_privmsg => run {
     my $me       = get ARG1;
     my $message  = get ARG2;
 
-    my $my_nick = recall 'spoofed_nick';
+    my $my_nick = recall [ config => spoofing => 'nick' ];
 
     my ($nick, $host) = split /!/, $userhost;
 
@@ -167,7 +175,7 @@ on ircd_daemon_privmsg => run {
     if ($me eq $my_nick) {
         my $event = Bot::Net::Message->new({
             sender_nick     => $nick,
-            sender_hosts    => $host,
+            sender_host     => $host,
             recipient_nicks => $me,
             message         => $message,
             private         => 1,
@@ -190,8 +198,8 @@ on ircd_daemon_public => run {
     my $channel  = get ARG1;
     my $message  = get ARG2;
 
-    my $my_nick  = recall 'spoofed_nick';
-    my $channels = recall 'channels';
+    my $my_nick  = recall [ config => spoofing => 'nick' ];
+    my $channels = recall [ config => 'channels' ];
 
     my ($nick, $host) = split /!/, $userhost;
 
@@ -258,6 +266,7 @@ on send_to => run {
     my $full_message = get ARG1;
 
     my $log     = recall 'log';
+    my $my_nick = recall [ config => spoofing => 'nick' ];
 
     # Split the message up by newlines
     my @messages = split /\n/, $full_message;
@@ -354,7 +363,7 @@ on send_to => run {
             }
 
             # Post the message by chunks
-            post irc => privmsg => $channel => $_ 
+            post ircd => daemon_cmd_privmsg => $my_nick => $channel => $_ 
                 for $message_chunks->($message);
         }
     }
@@ -364,7 +373,7 @@ on send_to => run {
 
         # For each message line, post it to the nick in chunks
         for my $message (@messages) {
-            post ircd => daemon_cmd_privmsg => $nick => $_
+            post ircd => daemon_cmd_privmsg => $my_nick => $nick => $_
                 for $message_chunks->($message);
         }
     }
@@ -449,8 +458,8 @@ This causes the IRC client to close down the connection and quit.
 on bot_quit => run {
     recall('log')->warn("Stopping spoofed server-side IRC bot.");
 
-    my $alias   = recall 'alias';
-    my $my_nick = recall 'spoofed_nick';
+    my $alias   = recall [ config => 'alias' ];
+    my $my_nick = recall [ config => spoofing => 'nick' ];
 
     post ircd => del_spoofed_nick => $my_nick => 'Quitting.';
     post ircd => unregister => 'all';
