@@ -208,10 +208,10 @@ sub default_configuration {
     my $package = shift;
 
     my $filename = join '/', split /::/,
-        Bot::Net->short_name_for_server($package);
+        Bot::Net->short_name_for_bot($package);
 
     return {
-        state_file => 'var/server/'.$filename.'.db',
+        state_file => 'var/bot/'.$filename.'.db',
     };
 }
 
