@@ -164,7 +164,6 @@ A semi-autonomous agent that does something. This documentation needs replacing.
 1;
 
 END_OF_BOT_MODULE_END
-    }
 }
 
 sub _create_bot_config {
