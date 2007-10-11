@@ -132,17 +132,17 @@ It ends by firing the L</on bot connected> state.
 =cut
 
 on _start => run {
-    my $alias    = remember 'alias';
-    my $my_nick  = remember 'spoofed_nick';
-    my $channels = remember 'channels';
+    my $alias    = recall 'alias';
+    my $my_nick  = recall 'spoofed_nick';
+    my $channels = recall 'channels';
 
     get(KERNEL)->alias_set($alias) if $alias;
 
     post ircd => register => 'all'; # TODO limit this to a subset
-    post ircd => add_spoofed_nick => $spoofed_nick;
+    post ircd => add_spoofed_nick => { nick => $my_nick };
 
-    for my $channel (@{ $channel} }) {
-        post ircd => daemon_cmd_join => $spoofed_nick, $channel;
+    for my $channel (@{ $channels }) {
+        post ircd => daemon_cmd_join => $my_nick, $channel;
     }
 
     yield 'bot_connected';
@@ -167,7 +167,7 @@ on ircd_daemon_privmsg => run {
     if ($me eq $my_nick) {
         my $event = Bot::Net::Message->new({
             sender_nick     => $nick,
-            sender_hosts    => $host
+            sender_hosts    => $host,
             recipient_nicks => $me,
             message         => $message,
             private         => 1,
@@ -452,7 +452,7 @@ on bot_quit => run {
     my $alias   = recall 'alias';
     my $my_nick = recall 'spoofed_nick';
 
-    post ircd => del_spoofed_nick => $spoofed_nick;
+    post ircd => del_spoofed_nick => $my_nick => 'Quitting.';
     post ircd => unregister => 'all';
 
     get(KERNEL)->alias_remove($alias) if $alias;
@@ -471,5 +471,3 @@ This program is free software and may be modified and distributed under the same
 =cut
 
 1;
-    }
-};
