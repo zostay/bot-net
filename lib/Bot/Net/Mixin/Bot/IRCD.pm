@@ -93,15 +93,11 @@ sub default_configuration {
     $default_channel =~ s/\W+/_/g;
 
     return {
-        ircd_bots => {
-            $name => {
-                alias        => $name,
+        alias        => $name,
 
-                spoofed_nick => $name,
+        spoofed_nick => $name,
 
-                channels     => [ '#'.$default_channel ],
-            },
-        },
+        channels     => [ '#'.$default_channel ],
     };
 }
 
@@ -136,17 +132,17 @@ It ends by firing the L</on bot connected> state.
 =cut
 
 on _start => run {
-    my $name = Bot::Net->short_name_for_bot( ref get(OBJECT) );
+    my $alias    = remember 'alias';
+    my $my_nick  = remember 'spoofed_nick';
+    my $channels = remember 'channels';
 
-    my $config = remember [ config => ircd_bots => $name ];
-
-    get(KERNEL)->alias_set($config->{alias}) if $config->{alias};
+    get(KERNEL)->alias_set($alias) if $alias;
 
     post ircd => register => 'all'; # TODO limit this to a subset
-    post ircd => add_spoofed_nick => $config->{spoofed_nick};
+    post ircd => add_spoofed_nick => $spoofed_nick;
 
-    for my $channel (@{ $config->{channels} }) {
-        post ircd => daemon_cmd_join => $config->{spoofed_nick}, $channel;
+    for my $channel (@{ $channel} }) {
+        post ircd => daemon_cmd_join => $spoofed_nick, $channel;
     }
 
     yield 'bot_connected';
@@ -163,8 +159,7 @@ on ircd_daemon_privmsg => run {
     my $me       = get ARG1;
     my $message  = get ARG2;
 
-    my $name    = Bot::Net->short_name_for_class( ref get OBJECT );
-    my $my_nick = recall [ config => ircd_bots => $name => 'spoofed_nick' ];
+    my $my_nick = recall 'spoofed_nick';
 
     my ($nick, $host) = split /!/, $userhost;
 
@@ -195,9 +190,8 @@ on ircd_daemon_public => run {
     my $channel  = get ARG1;
     my $message  = get ARG2;
 
-    my $name     = Bot::Net->short_name_for_class( ref get OBJECT );
-    my $my_nick  = recall [ config => ircd_bots => $name => 'spoofed_nick' ];
-    my $channels = recall [ config => ircd_bots => $name => 'channels' ];
+    my $my_nick  = recall 'spoofed_nick';
+    my $channels = recall 'channels';
 
     my ($nick, $host) = split /!/, $userhost;
 
@@ -455,13 +449,13 @@ This causes the IRC client to close down the connection and quit.
 on bot_quit => run {
     recall('log')->warn("Stopping spoofed server-side IRC bot.");
 
-    post ircd => del_spoofed_nick => $config->{spoofed_nick};
+    my $alias   = recall 'alias';
+    my $my_nick = recall 'spoofed_nick';
+
+    post ircd => del_spoofed_nick => $spoofed_nick;
     post ircd => unregister => 'all';
 
-    my $name = Bot::Net->short_name_for_bot( ref get(OBJECT) );
-    my $config = remember [ config => ircd_bots => $name ];
-
-    get(KERNEL)->alias_remove($config->{alias}) if $config->{alias};
+    get(KERNEL)->alias_remove($alias) if $alias;
 };
 
 =head1 AUTHORS
