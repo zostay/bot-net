@@ -63,7 +63,7 @@ sub default_configuration {
         ircd_config => {
             servername => lc Bot::Net->short_name_for_server($package) . '.irc',
             nicklen    => 15,
-            network    => Bot::Net->config->new('ApplicationName'),
+            network    => Bot::Net->config->net('ApplicationName'),
         },
         listeners => [
             { port => 6667 },
