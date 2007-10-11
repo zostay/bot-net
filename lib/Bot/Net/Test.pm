@@ -3,7 +3,7 @@ use warnings;
 
 package Bot::Net::Test;
 use base qw/ Bot::Net::Object Test::More Class::Data::Inheritable /;
-#sub POE::Kernel::TRACE_REFCNT () { 1 }
+
 use Bot::Net;
 use Bot::Net::Mixin;
 
@@ -188,6 +188,15 @@ If you have a test that may run for longer than 30 seconds, make sure your event
 
 =cut
 
+sub _run_that {
+    my @program = @_;
+
+    sub {
+        $ENV{PERL5LIB} = join ':', @INC;
+        exec(@program);
+    };
+}
+
 on _start => run {
     for my $server (keys %{ Bot::Net::Test->servers }) {
         Bot::Net::Test->log->info("Starting server $server");
@@ -196,8 +205,10 @@ on _start => run {
         $server_name =~ s/\W+/_/g;
 
         my $wheel = POE::Wheel::Run->new(
-            Program     => File::Spec->catfile('bin', 'botnet'),
-            ProgramArgs => [ qw/ run --server /, $server ],
+            Program     => _run_that(
+                File::Spec->catfile('bin', 'botnet'),
+                qw/ run --server /, $server,
+            ),
 
             StdinEvent  => "server_${server_name}_stdin",
             StdoutEvent => "server_${server_name}_stdout",
@@ -218,8 +229,10 @@ on _start => run {
         $bot_name =~ s/\W+/_/g;
 
         my $wheel = POE::Wheel::Run->new(
-            Program     => File::Spec->catfile('bin', 'botnet'),
-            ProgramArgs => [ qw/ run --bot /, $bot ],
+            Program     => _run_that(
+                File::Spec->catfile('bin', 'botnet'),
+                qw/ run --bot /, $bot,
+            ),
 
             StdinEvent  => "bot_${bot_name}_stdin",
             StdoutEvent => "bot_${bot_name}_stdout",
