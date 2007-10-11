@@ -44,7 +44,7 @@ With no options other than the bot name, this will create a vanilla bot that use
 
 =head1 METHODS
 
-=head2 actions
+=head2 options
 
 Returns the arguments used by this script. See L<App::CLI::Command>.
 
@@ -70,22 +70,22 @@ sub run {
     defined $self->{name}
         or die "No bot name given with required --name option.\n";
 
-    $self->bot_class( Bot::Net->app_class('Bot', $self->{name}) );
+    $self->bot_class( Bot::Net->net_class('Bot', $self->{name}) );
     $self->bot_file( 
         File::Spec->catfile(
-            $FindBin::Bin, 'lib', 
+            $FindBin::Bin, '..', 'lib', 
             split(/::/, $self->bot_class)
         ) . '.pm'
     );
     $self->bot_conf(
         File::Spec->catfile(
-            $FindBin::Bin, 'etc', 'bot', 
+            $FindBin::Bin, '..', 'etc', 'bot', 
             split(/::/, $self->{name})
         ) . '.yml'
     );
     $self->bot_state(
         File::Spec->catfile(
-            $FindBin::Bin, 'var', 'bot',
+            $FindBin::Bin, '..', 'var', 'bot',
             split(/::/, $self->{name})
         ) . '.db'
     );
@@ -93,17 +93,17 @@ sub run {
     my @mixins = @{ $self->{mixins} || [] };
     my @mixin_classes = (
         'Bot::Net::Bot',
-        map { Bot::Net->app_class('Mixin', 'Bot', $_) } @mixins
+        map { Bot::Net->net_class('Mixin', 'Bot', $_) } @mixins
     );
 
     $self->mixin_classes( \@mixin_classes );
 
     if ($self->{clone}) {
-        $self->clone_class( Bot::Net->app_class('Bot', $self->{clone}) );
+        $self->clone_class( Bot::Net->net_class('Bot', $self->{clone}) );
 
         $self->clone_config( 
             File::Spec->catfile(
-                $FindBin::Bin, 'etc', 'bot', 
+                $FindBin::Bin, '..', 'etc', 'bot', 
                 split(/::/, $self->{clone})
             ) . '.yml'
         );
@@ -178,11 +178,16 @@ sub _create_bot_config {
     else {
         print "Creating a new ",$self->bot_conf,"...\n";
 
-        # TODO Add a mechanism to allow mixins to add default configuration 
-        # options to this
-        my $bot_conf = {
-            state_file => $self->bot_state,
-        };
+        my @configs;
+        for my $mixin_class (@{ $self->mixin_classes || [] }) {
+            if (my $method = $mixin_class->can('default_configuration')) {
+                push @configs, $method->($mixin_class, $self->bot_class);
+            }
+        }
+
+        my $bot_conf = Hash::Merge::merge( @configs );
+
+        YAML::Syck::DumpFile( $self->bot_conf, $bot_conf );
     }
 }
 
