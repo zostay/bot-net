@@ -28,10 +28,10 @@ Bot::Net::Mixin::Bot::IRC - mixin class for building IRC bots
   };
 
   on bot message_to_me => run {
-      my $message = get ARG0;
+      my $event = get ARG0;
 
-      my $reply = recall('eliza')->transform( $message->text );
-      yield reply_to_sender, $message, $reply;
+      my $reply = recall('eliza')->transform( $event->message );
+      yield reply_to_sender => $message, $reply;
   };
 
   1;
@@ -45,7 +45,7 @@ This is the mixin-class for L<Bot::Net> IRC bots. You "inherit" all the features
 
 =head1 METHODS
 
-=head1 setup
+=head2 setup
 
 Adds the IRC component to the bot's memory on setup. 
 
@@ -70,7 +70,7 @@ sub default_configuration {
     my $class   = shift;
     my $package = shift;
 
-    my $name = Bot::Net->short_name_for_bot($class);
+    my $name = Bot::Net->short_name_for_bot($package);
     $name =~ s/\W+/_/g;
 
     my $default_channel = Bot::Net->config->net('ApplicationName');
@@ -80,7 +80,7 @@ sub default_configuration {
         irc_connect => {
             nick     => $name,
             username => lc $name,
-            ircname  => Bot::Net->short_name_for_bot($class),
+            ircname  => Bot::Net->short_name_for_bot($package),
 
             server   => 'localhost',
             port     => 6667,
@@ -96,7 +96,7 @@ sub default_configuration {
 
 The following states are avaiable for your bot to implement.
 
-=head1 on bot connected
+=head2 on bot connected
 
 This state is emitted as soon as the bot has connected to the server and the server has passed back a message. This means it is now safe to communicate with the server.
 
