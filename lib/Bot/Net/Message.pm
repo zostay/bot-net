@@ -79,7 +79,8 @@ sub recipient_nicks {
     my $self = shift;
 
     if (@_) {
-        if (reftype $_[0] eq 'ARRAY' and not blessed $_[0]) {
+        my $reftype = reftype $_[0];
+        if (defined $reftype and $reftype eq 'ARRAY' and not blessed $_[0]) {
             $self->_recipient_nicks([ @{ $_[0] } ]);
         }
 
@@ -101,7 +102,8 @@ sub recipient_groups {
     my $self = shift;
 
     if (@_) {
-        if (reftype $_[0] eq 'ARRAY' and not blessed $_[0]) {
+        my $reftype = reftype $_[0];
+        if (defined $reftype and $reftype eq 'ARRAY' and not blessed $_[0]) {
             $self->_recipient_groups([ @{ $_[0] } ]);
         }
 
