@@ -4,6 +4,7 @@ use warnings;
 package Bot::Net::Util;
 
 use Bot::Net;
+use Carp;
 use Regexp::Common qw/ delimited /;
 
 =head1 NAME
@@ -37,6 +38,11 @@ would become:
 sub parse_bot_command {
     my $class = shift;
     local $_  = shift;
+
+    unless (defined $_) {
+        carp "No string given to parse. Returning an empty list.";
+        return;
+    }
 
     my @args = m/
         ( $RE{delimited}{-delim=>'"'}{-esc=>'"'} 
