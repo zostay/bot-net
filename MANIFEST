@@ -17,6 +17,7 @@ lib/Bot/Net/Log.pm
 lib/Bot/Net/Message.pm
 lib/Bot/Net/Mixin.pm
 lib/Bot/Net/Mixin/Bot/IRC.pm
+lib/Bot/Net/Mixin/Bot/IRCD.pm
 lib/Bot/Net/Mixin/Server/IRC.pm
 lib/Bot/Net/Object.pm
 lib/Bot/Net/Script.pm
@@ -36,13 +37,18 @@ t/02-pod-coverage.t
 t/02-pod.t
 t/lib/Bot/Net/SubTest.pm
 t/TestNet/bin/botnet
+t/TestNet/etc/bot/AtoZ.yml
 t/TestNet/etc/bot/Count.yml
 t/TestNet/etc/log4perl.conf
 t/TestNet/etc/net.yml
 t/TestNet/etc/server/Main.yml
+t/TestNet/etc/server/ServerBotted.yml
+t/TestNet/lib/TestNet/Bot/AtoZ.pm
 t/TestNet/lib/TestNet/Bot/Count.pm
 t/TestNet/lib/TestNet/Server/Main.pm
+t/TestNet/lib/TestNet/Server/ServerBotted.pm
 t/TestNet/Makefile.PL
+t/TestNet/t/atoz.t
 t/TestNet/t/count.t
 t/TestNet/var/bot/.keep
 t/TestNet/var/server/.keep
