@@ -77,6 +77,8 @@ sub default_configuration {
     $default_channel =~ s/\W+/_/g;
 
     return {
+        auto_connect => 1,
+
         irc_connect => {
             nick     => $name,
             username => lc $name,
@@ -95,6 +97,10 @@ sub default_configuration {
 =head1 BOT STATES
 
 The following states are avaiable for your bot to implement.
+
+=head2 on bot connect
+
+This is automatically yielded by L</on _start> unless the C<auto_connect> configuration option is set to "0". If it is set to "0", you may emit this state to cause the bot to connect to the IRC server.
 
 =head2 on bot connected
 
@@ -122,7 +128,22 @@ Sets up the IRC client.
 
 on _start => run {
     post irc => register => 'all';
-    post irc => connect  => recall [ config => 'irc_connect' ];
+
+    my $auto_connect = recall [ config => 'auto_connect' ];
+    if (not defined $auto_connect or $auto_connect) {
+        yield 'bot_connect';
+    }
+};
+
+=head2 on bot connect
+
+Tells the IRC component to connect to the IRC server using the configuration stored in the C<irc_connect> option of the configuration.
+
+=cut
+
+on bot_connect => run {
+    my $config = recall [ config => 'irc_connect' ] ;
+    call irc => connect  => $config;
 };
 
 =head2 on irc_001
@@ -142,6 +163,12 @@ on irc_001 => run {
     }
 
     yield 'bot_connected';
+
+    # Report readiness (helpful for testing)
+    my $config = recall [ config => 'irc_connect' ] ;
+    recall('log')->info(
+        "BOT READY : nick $config->{nick} server $config->{server} "
+       ."port $config->{port}");
 };
 
 =head2 on irc_disconnected
@@ -477,8 +504,10 @@ This causes the IRC client to close down the connection and quit.
 =cut
 
 on bot_quit => run {
+    my $message = get ARG0;
+
     recall('log')->warn("Quitting the IRC connection.");
-    post irc => quit => 'Quitting.';
+    post irc => quit => ($message || 'Quitting.');
 
     post irc => unregister => 'all';
     forget 'irc';

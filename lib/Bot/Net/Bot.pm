@@ -221,9 +221,11 @@ sub default_configuration {
 
 Bots should implement this event to perform any startup tasks. This is bot-specific and mixins should not do anything with this event.
 
-=head2 on bot quit
+=head2 on bot quit MESSAGE
 
-Bots may emit this state to ask the protocol client and all resources attached to the bot to close. If all mixins are implemented correctly, this should very quickly result in the bot entering the L</on _stop> state and L</on bot shutdown>. (If not, the bot may be stuck in a sort of zombie state unable to die.)
+Bots may emit this state to ask the protocol client and all resources attached to the bot to close. The C<MESSAGE> parameter allows you to pass a human readable message that can be passed on as part of the protocol quit or logged or whatever...
+
+If all mixins are implemented correctly, this should very quickly result in the bot entering the L</on _stop> state and L</on bot shutdown>. (If not, the bot may be stuck in a sort of zombie state unable to die.)
 
 =head2 on bot shtudown
 

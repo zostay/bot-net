@@ -80,11 +80,17 @@ At startup, this hanlder loads the information stored in the configuration file 
 =cut
 
 on _start => run {
-    my $log  = recall 'log';
-    my $ircd = recall 'ircd';
-
     # Start receiving server events
     post ircd => 'register';
+
+    yield 'install_auth_configuration';
+    yield 'install_operator_configuration';
+    yield 'install_listener_configuration';
+};
+
+on install_auth_configuration => run {
+    my $log  = recall 'log';
+    my $ircd = recall 'ircd';
 
     # Installing masks
     $log->info("Installing the masks...");
@@ -92,6 +98,11 @@ on _start => run {
     for my $mask (@$masks) {
         $ircd->add_auth( %$mask );
     }
+};
+
+on install_operator_configuration => run {
+    my $log  = recall 'log';
+    my $ircd = recall 'ircd';
 
     # Installing operators
     $log->info("Installing the operators...");
@@ -99,15 +110,19 @@ on _start => run {
     for my $operator (@$operators) {
         $ircd->add_operator( %$operator );
     }
+};
+
+on install_listener_configuration => run {
+    my $log  = recall 'log';
+    my $ircd = recall 'ircd';
 
     # Start a listener on the 'standard' IRC port.
     $log->info("Installing the listeners...");
     my $listeners = recall [ config => 'listeners' ];
     for my $listener (@$listeners) {
+        $log->info("SERVER READY : port $listener->{port}");
         $ircd->add_listener( %$listener );
     }
-
-    undef;
 };
 
 =head2 on server quit

@@ -108,7 +108,7 @@ sub stop_server {
     my $class  = shift;
     my $server = shift;
 
-    my $wheel = delete $class->servers->{ $server };
+    my $wheel = delete $class->servers->{ $server }{ 'wheel' };
     if ($wheel) {
         Bot::Net::Test->log->info("Terminating server $server (@{[$wheel->PID]}:@{[$wheel->ID]})");
         $wheel->kill;
@@ -138,7 +138,7 @@ sub stop_bot {
     my $class = shift;
     my $bot   = shift;
 
-    my $wheel = delete $class->bots->{ $bot };
+    my $wheel = delete $class->bots->{ $bot }{ 'wheel' };
     if ($wheel) {
         Bot::Net::Test->log->info("Terminating bot $bot (@{[$wheel->PID]}:@{[$wheel->ID]})");
         $wheel->kill;
@@ -161,9 +161,14 @@ sub run_test {
             if $mixin->can('default_configuration');
     }
 
+    my $config = Hash::Merge::merge( @configs );
+
+    # XXX This is a hack, I need to find a better way...
+    $config->{auto_connect} = 0;
+
     {
         no strict 'refs';
-        ${ $test . '::CONFIG' } = Hash::Merge::merge( @configs );
+        ${ $test . '::CONFIG' } = $config;
     }
 
     Bot::Net::Test->log->info("Starting test");
@@ -198,6 +203,24 @@ sub _run_that {
 }
 
 on _start => run {
+    yield 'spawn_all_servers';
+    yield 'spawn_all_bots_after_servers';
+    yield 'connect_after_bots';
+
+    delay 'shutdown_unless_something_happened', 30;
+
+    remember something_happened => 0;
+
+    get(KERNEL)->sig(CHLD => 'child_reaper');
+};
+
+=head2 on spawn_all_servers
+
+For each server added in the test file, tell those servers to start.
+
+=cut
+
+on spawn_all_servers => run {
     for my $server (keys %{ Bot::Net::Test->servers }) {
         Bot::Net::Test->log->info("Starting server $server");
 
@@ -205,22 +228,66 @@ on _start => run {
         $server_name =~ s/\W+/_/g;
 
         my $wheel = POE::Wheel::Run->new(
-            Program     => _run_that(
+            Program      => _run_that(
                 File::Spec->catfile('bin', 'botnet'),
                 qw/ run --server /, $server,
             ),
 
-            StdinEvent  => "server_${server_name}_stdin",
-            StdoutEvent => "server_${server_name}_stdout",
-            StderrEvent => "server_${server_name}_stderr",
+            StdinEvent   => "server_${server_name}_stdin",
+            StdoutEvent  => "server_${server_name}_stdout",
+            StderrEvent  => "server_${server_name}_stderr",
+
+            ErrorEvent   => "server_${server_name}_error",
+            CloseEvent   => "server_${server_name}_close",
         );
 
-        Bot::Net::Test->servers->{ $server } = $wheel;
+        on "server_${server_name}_stdout" => run {
+            local $_ = get ARG0;
+            recall('log')->debug("$server - $_");
+            return if Bot::Net::Test->servers->{ $server }{ 'ready' } == 1;
+            if (my ($status) = /SERVER READY\s*:\s*(.*)$/m) {
+                my %status = split /\s+/, $status;
+                Bot::Net::Test->servers->{ $server }{ 'ready' }  = 1;
+                Bot::Net::Test->servers->{ $server }{ 'status' } = \%status;
+            }
+        };
+
+        on "server_${server_name}_error" => run {
+            my $op    = get ARG0;
+            my $errno = get ARG1;
+            my $error = get ARG2;
+            Test::More::fail("FAILED $server $op ($errno) $error");
+            yield 'bot_quit';
+        };
+
+        Bot::Net::Test->servers->{ $server }{ 'wheel' } = $wheel;
+        Bot::Net::Test->servers->{ $server }{ 'ready' } = 0;
+    }
+};
+
+=head2 on spawn_all_bots_after_servers
+
+Checks to see if all the servers have reported ready status yet. If they have, this handler will tell all the bots to start. Otherwise, it yields the event again to try again in the next time slice.
+
+=cut
+
+sub _all_servers_are_ready {
+    for my $server (keys %{ Bot::Net::Test->servers }) {
+        my $status = Bot::Net::Test->servers->{ $server };
+        unless (defined $status and $status->{'ready'}) {
+            return '';
+        }
     }
 
-    # TODO This is ugly, need a way to get reports from the servers about
-    # readiness rather than wait and pray we waited long enough.
-    sleep 2;
+    return 1;
+}
+
+on spawn_all_bots_after_servers => run {
+    recall('log')->debug('spawn_all_bots_after_servers');
+    unless (_all_servers_are_ready()) {
+        delay spawn_all_bots_after_servers => 1;
+        return;
+    }
 
     for my $bot (keys %{ Bot::Net::Test->bots }) {
         Bot::Net::Test->log->info("Starting bot $bot");
@@ -229,28 +296,69 @@ on _start => run {
         $bot_name =~ s/\W+/_/g;
 
         my $wheel = POE::Wheel::Run->new(
-            Program     => _run_that(
+            Program      => _run_that(
                 File::Spec->catfile('bin', 'botnet'),
                 qw/ run --bot /, $bot,
             ),
 
-            StdinEvent  => "bot_${bot_name}_stdin",
-            StdoutEvent => "bot_${bot_name}_stdout",
-            StderrEvent => "bot_${bot_name}_stderr",
+            StdinEvent   => "bot_${bot_name}_stdin",
+            StdoutEvent  => "bot_${bot_name}_stdout",
+            StderrEvent  => "bot_${bot_name}_stderr",
+
+            ErrorEvent   => "bot_${bot_name}_error",
+            CloseEvent   => "bot_${bot_name}_close",
+            StderrFilter => POE::Filter::Line->new,
         );
 
-        Bot::Net::Test->bots->{ $bot } = $wheel;
+        on "bot_${bot_name}_stdout" => run {
+            local $_ = get ARG0;
+            recall('log')->debug("$bot - $_");
+            return if Bot::Net::Test->bots->{ $bot }{ 'ready' } == 1;
+            if (my ($status) = /BOT READY\s*:\s*(.*)$/m) {
+                my %status = split /\s+/, $status;
+                Bot::Net::Test->bots->{ $bot }{ 'ready' }  = 1;
+                Bot::Net::Test->bots->{ $bot }{ 'status' } = \%status;
+            }
+        };
+
+        on "bot_${bot_name}_error" => run {
+            my $op    = get ARG0;
+            my $errno = get ARG1;
+            my $error = get ARG2;
+            Test::More::fail("FAILED $bot $op ($errno) $error");
+            yield 'bot_quit';
+        };
+
+        Bot::Net::Test->bots->{ $bot }{ 'wheel' } = $wheel;
+        Bot::Net::Test->bots->{ $bot }{ 'ready' } = 0;
+    }
+};
+
+=head2 on connect_after_bots
+
+Checks to see if all the bots have spawned yet. If they have, then this emits C<bot connect> to connect the test bot (assuming the test is a test bot). If all the bots have not yet connected, then this will re-emit L</on connect_after_bots> to try again in another time slice.
+
+=cut
+
+sub _all_bots_are_ready() {
+    for my $bot (keys %{ Bot::Net::Test->bots }) {
+        my $status = Bot::Net::Test->bots->{ $bot };
+        unless (defined $status and $status->{'ready'}) {
+            return '';
+        }
     }
 
-    # TODO This is ugly, need a way to get reports from the bots about
-    # readiness rather than wait and pray we waited long enough.
-    sleep 2;
+    return 1;
+}
 
-    delay 'shutdown_unless_something_happened', 30;
+on connect_after_bots => run {
+    recall('log')->debug('connect_after_bots');
+    unless (_all_servers_are_ready() and _all_bots_are_ready()) {
+        delay connect_after_bots => 1;
+        return;
+    }
 
-    remember something_happened => 0;
-
-    get(KERNEL)->sig(CHLD => 'child_reaper');
+    yield 'bot_connect';
 };
 
 =head2 on child_reaper
@@ -325,8 +433,10 @@ Shutdown any bots and servers that haven't yet been stopped.
 on [ qw/ bot_quit server_quit / ] => run {
     Bot::Net::Test->log->warn("Quitting the test.");
 
-    # Don't have this delayed event anymore
+    # Don't have these delayed events anymore
     delay 'shutdown_unless_something_happened';
+    delay 'spawn_all_bots_after_servers';
+    delay 'connect_after_bots';
 
     # Shutdown all bots
     for my $bot (keys %{ Bot::Net::Test->bots || {} }) {

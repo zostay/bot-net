@@ -3,6 +3,7 @@ use warnings;
 
 package Bot::Net::Log;
 
+use FileHandle;
 use FindBin;
 use Log::Log4perl;
 use Readonly;
@@ -37,6 +38,12 @@ Creates the logger. In general, you never need to call this. Use this instead:
 
 sub new {
     my $class = shift;
+
+    # XXX Hack to get tests to work since it depends on the log messages
+    # reported to flush... probably not good for production
+    STDOUT->autoflush(1);
+    STDERR->autoflush(1);
+
     Log::Log4perl::init($CONFIG_FILE);
     bless {}, $class;
 }

@@ -146,7 +146,10 @@ on _start => run {
     recall('log')->info('Setting up nick spoofing as '
         .$spoofed->{nick});
     post ircd => register => 'all'; # TODO limit this to a subset
-    post ircd => add_spoofed_nick => $spoofed;
+
+    # Make sure we are, in fact, ready when we report
+    call ircd => add_spoofed_nick => $spoofed;
+    recall('log')->info("BOT READY : nick $spoofed->{nick}");
 
     for my $channel (@{ $channels || [] }) {
         recall('log')->info('Joining '.$channel);
