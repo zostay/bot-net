@@ -1,5 +1,22 @@
 Revision history for Perl module Bot::Net
 
+0.0.3 Thu Oct 11 0:51:30 2007
+    * Fixed a missing semi-colon during the generation of the scaffolding's
+      Makefile.PL in Bot::Net::Script::Net.
+    * Refactored Bot::Net::Script::Server into a server creation script.
+    * Fixed several compile errors and bugs in the server and bot creation
+      scripts.
+    * Added the ability for mixins to generate a default configuration for a bot
+      or server via the default_configuration() hook.
+    * Added Bot::Net::Mixin::Bot::IRCD for creating server-side IRC bots that
+      run within the same process as server implementing
+      Bot::Net::Mixin::Server::IRC.
+    * Improved Bot::Net::Test so that it passes the current value of @INC to
+      fork-exec'd servers and bots by setting PERL5LIB in the environment.
+    * Fixed a number of warnings about undefined values.
+    * Added new tests for server-side bots via the ServerBotted bot in TestNet
+      and the AtoZ server-side IRC bot.
+
 0.0.2 Wed Oct 10 8:24:23 2007
     * Improved Bot::Net::Script::Net to create the log4perl.conf correctly.
     * Refactored Bot::Net::Script::Bot to create new bots rather than run them
