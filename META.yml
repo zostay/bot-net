@@ -15,7 +15,7 @@ requires:
   App::CLI::Command::Help: 0
   Class::Accessor::Fast: 0
   Class::Data::Inheritable: 0
-  Data::Remember: 0.05
+  Data::Remember: 0.07
   File::Find::Rule: 0
   Hash::Merge: 0
   Log::Log4perl: 0
