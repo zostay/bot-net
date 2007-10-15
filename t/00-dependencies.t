@@ -62,7 +62,7 @@ my %required;
 for (sort keys %used) {
     my $first_in = Module::CoreList->first_release($_);
     next if defined $first_in and $first_in <= 5.00803;
-    next if /^(Bot::Net|inc|t)(::|$)/;
+    next if /^(Bot::Net|TestNet|inc|t)(::|$)/;
     ok(exists $required{$_}, "$_ in Makefile.PL")
       or diag("used in ", join ", ", sort keys %{ $used{$_ } });
     delete $used{$_};
