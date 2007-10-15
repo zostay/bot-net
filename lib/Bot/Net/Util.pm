@@ -3,6 +3,7 @@ use warnings;
 
 package Bot::Net::Util;
 
+use Bot::Net;
 use Regexp::Common qw/ delimited /;
 
 =head1 NAME
@@ -35,11 +36,9 @@ would become:
 
 sub parse_bot_command {
     my $class = shift;
-    my $message = shift;
+    local $_  = shift;
 
-    my ($sender, $kernel, $command, $callback, $opts) = @_[SENDER,KERNEL,ARG0,ARG1,ARG2];
-
-    my @args = $command =~ /
+    my @args = m/
         ( $RE{delimited}{-delim=>'"'}{-esc=>'"'} 
         | $RE{delimited}{-delim=>"'"}{-esc=>"'"}
         | \S+
