@@ -8,7 +8,7 @@ requires 'App::CLI::Command';
 requires 'App::CLI::Command::Help';
 requires 'Class::Accessor::Fast';
 requires 'Class::Data::Inheritable';
-requires 'Data::Remember'           => '0.05';
+requires 'Data::Remember'           => '0.07';
 requires 'File::Find::Rule';
 requires 'Hash::Merge';
 requires 'Log::Log4perl';

@@ -20,7 +20,8 @@ our @EXPORT = (
     @POE::Declarative::EXPORT, 
     
     # Re-export Data::Remember
-    qw/ remember recall forget brain /,
+    qw/ remember remember_these recall recall_and_update 
+        forget forget_when brain /,
 
     # Add in our own subs
     qw/ bot setup /,
