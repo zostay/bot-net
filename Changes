@@ -1,5 +1,17 @@
 Revision history for Perl module Bot::Net
 
+0.0.4 Sun Oct 14 18:55:51 2007
+    * Modified Bot::Net::Test so that it waits for a SERVER READY message from
+      all servers before starting bots and waits for a BOT READY message from all
+      bots before starting the test (rather than hoping a 2 second delay between
+      each phase will be good enough).
+    * Updated Bot::Net::Mixin::Server::IRC to report a SERVER READY message.
+    * Updated Bot::Net::Mixin::Bot::IRC to report a BOT READY message.
+    * Updated Bot::Net::Mixin::Bot::IRCD to report a BOT READY message (though
+      it's not actually necessary).
+    * Added a hack to Bot::Net::Log to autoflush STDOUT and STDERR to make
+      logging work for testing.
+
 0.0.3 Thu Oct 11 0:51:30 2007
     * Fixed a missing semi-colon during the generation of the scaffolding's
       Makefile.PL in Bot::Net::Script::Net.

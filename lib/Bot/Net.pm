@@ -4,7 +4,7 @@ use warnings;
 package Bot::Net;
 use base qw/ Class::Data::Inheritable /;
 
-our $VERSION = '0.0.3';
+our $VERSION = '0.0.4';
 
 use Bot::Net::Config;
 use Bot::Net::Log;
