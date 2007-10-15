@@ -132,7 +132,8 @@ See L<Bot::Net::Log>.
 sub log {
     my $class = shift;
     my $self  = $class->bot_net;
-    my $name  = shift || 'Bot::Net';
+    my $name  = shift || eval { Bot::Net->config->net('ApplicationClass') } 
+                      || 'Bot::Net';
 
     if (not defined $self->{log}) {
         $self->{log} = Bot::Net::Log->new;
