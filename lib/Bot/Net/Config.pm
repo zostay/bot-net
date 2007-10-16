@@ -132,9 +132,10 @@ sub server_file {
     my $name = shift;
 
     my @path = split /::/, $name;
+    $path[ $#path ] .= '.yml';
 
     return File::Spec->catfile(
-        $FindBin::Bin, '..', 'etc', 'server', $name.'.yml');
+        $FindBin::Bin, '..', 'etc', 'server', @path);
 }
 
 =head2 server NAME
@@ -164,8 +165,9 @@ sub bot_file {
     my $name = shift;
 
     my @path = split /::/, $name;
+    $path[ $#path ] .= '.yml';
 
-    return File::Spec->catfile($FindBin::Bin, '..', 'etc', 'bot', $name.'.yml');
+    return File::Spec->catfile($FindBin::Bin, '..', 'etc', 'bot', @path);
 }
 
 =head2 bot NAME
