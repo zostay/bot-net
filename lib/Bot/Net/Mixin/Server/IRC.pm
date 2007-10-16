@@ -86,7 +86,16 @@ on _start => run {
     yield 'install_auth_configuration';
     yield 'install_operator_configuration';
     yield 'install_listener_configuration';
+    yield 'install_peer_configuration';
 };
+
+=head2 on install_auth_configuration
+
+Called by L</on _start> to configure the authentication masks. This reads the "masks" section of the configuration and makes it so that only the users found in that configuration may successfully login. 
+
+See L<POE::Component::Server::IRC/add_auth>.
+
+=cut
 
 on install_auth_configuration => run {
     my $log  = recall 'log';
@@ -100,6 +109,14 @@ on install_auth_configuration => run {
     }
 };
 
+=head2 on install_operator_configuration
+
+This is called by L</on _start> and reads the "operators" setting from the configuration file. That configuration will be used to grant logging users server op status.
+
+See L<POE::Component::Server::IRC/add_operator>.
+
+=cut
+
 on install_operator_configuration => run {
     my $log  = recall 'log';
     my $ircd = recall 'ircd';
@@ -112,6 +129,14 @@ on install_operator_configuration => run {
     }
 };
 
+=head2 on install_listener_configuration
+
+This event handler initializes a listening port for each entry in the "listeners" setting of the configuration file. This is called by L</on _start>. For each listener initialized, it also reports a READY status message to the logs.
+
+See L<POE::Component::Server::IRC/add_listener>.
+
+=cut
+
 on install_listener_configuration => run {
     my $log  = recall 'log';
     my $ircd = recall 'ircd';
@@ -120,9 +145,32 @@ on install_listener_configuration => run {
     $log->info("Installing the listeners...");
     my $listeners = recall [ config => 'listeners' ];
     for my $listener (@$listeners) {
-        $log->info("SERVER READY : port $listener->{port}");
         $ircd->add_listener( %$listener );
+        $log->info("SERVER READY : port $listener->{port}");
     }
+};
+
+=head2 on install_peer_configuration
+
+Run by L</on _start>, this handler intiates peer connections between IRC servers to create the IRC network. This will either notify the server that it should be anticipating an incoming connection from a peer or cause it to initiate a connection.
+
+See L<POE::Component::Server::IRC/add_peer>.
+
+=cut
+
+on install_peer_configuration => run {
+    my $log  = recall 'log';
+    my $ircd = recall 'ircd';
+
+    # Tell the server to wait for a peer connection or initiate one
+    $log->info("Installing the peers...");
+    my $peers = recall [ config => 'peers' ];
+    for my $peer (@$peers) {
+        $ircd->add_peer( %$peer );
+        $log->info(
+            ($peer->{type} eq 'r' ? 'Connecting to'  : 'Listening for')
+           .' server peer named '.$peer->{name});
+   }
 };
 
 =head2 on server quit
