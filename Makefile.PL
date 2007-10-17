@@ -13,6 +13,8 @@ requires 'File::Find::Rule';
 requires 'Hash::Merge';
 requires 'Log::Log4perl';
 requires 'POE';
+requires 'POE::Component::IRC';
+requires 'POE::Component::Server::IRC';
 requires 'POE::Declarative'         => '0.007';
 requires 'POE::Declarative::Mixin';
 requires 'Readonly';
