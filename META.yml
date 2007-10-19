@@ -20,6 +20,8 @@ requires:
   Hash::Merge: 0
   Log::Log4perl: 0
   POE: 0
+  POE::Component::IRC: 0
+  POE::Component::Server::IRC: 0
   POE::Declarative: 0.007
   POE::Declarative::Mixin: 0
   Readonly: 0

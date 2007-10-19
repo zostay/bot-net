@@ -14,6 +14,7 @@ use POE qw/ Wheel::Run /;
 
 __PACKAGE__->mk_classdata('servers' => {});
 __PACKAGE__->mk_classdata('bots'    => {});
+__PACKAGE__->mk_classdata('waiting' => {});
 
 =head1 NAME
 
@@ -111,6 +112,7 @@ sub stop_server {
     my $wheel = delete $class->servers->{ $server }{ 'wheel' };
     if ($wheel) {
         Bot::Net::Test->log->info("Terminating server $server (@{[$wheel->PID]}:@{[$wheel->ID]})");
+        $class->waiting->{ $wheel->PID } = 1;
         $wheel->kill;
     }
 }
@@ -141,6 +143,7 @@ sub stop_bot {
     my $wheel = delete $class->bots->{ $bot }{ 'wheel' };
     if ($wheel) {
         Bot::Net::Test->log->info("Terminating bot $bot (@{[$wheel->PID]}:@{[$wheel->ID]})");
+        $class->waiting->{ $wheel->PID } = 1;
         $wheel->kill;
     }
 }
@@ -371,6 +374,8 @@ on child_reaper => run {
     my $pid = get ARG1;
     my $err = get ARG2;
 
+    delete Bot::Net::Test->waiting->{ $pid };
+
     my $return = $err >> 8;
     my $signal = $err & 127;
     my $dump   = $err & 128;
@@ -448,6 +453,19 @@ on [ qw/ bot_quit server_quit / ] => run {
         Bot::Net::Test->stop_server($server);
     }
 
+    yield 'wait_for_stop';
+};
+
+=head2 on wait_for_stop
+
+Called at C<on bot quit> to wait for all the processes to shutdown. It will wait 10 seconds for this before giving. Unless your OS is doing something wonky, that should never happen... if it does, let me know.
+
+=cut
+
+my $max_wait = 100;
+on wait_for_stop => run {
+    my $waiting = scalar keys %{ Bot::Net::Test->waiting };
+    delay wait_for_stop => 0.1 if $waiting and $max_wait-- > 0;
 };
 
 =head1 AUTHORS
