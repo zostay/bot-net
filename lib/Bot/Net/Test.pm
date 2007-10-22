@@ -111,7 +111,7 @@ sub stop_server {
 
     my $wheel = delete $class->servers->{ $server }{ 'wheel' };
     if ($wheel) {
-        Bot::Net::Test->log->info("Terminating server $server (@{[$wheel->PID]}:@{[$wheel->ID]})");
+        Bot::Net::Test->log->info("Terminating server $server (pid:@{[$wheel->PID]})");
         $class->waiting->{ $wheel->PID } = 1;
         $wheel->kill;
     }
@@ -142,7 +142,7 @@ sub stop_bot {
 
     my $wheel = delete $class->bots->{ $bot }{ 'wheel' };
     if ($wheel) {
-        Bot::Net::Test->log->info("Terminating bot $bot (@{[$wheel->PID]}:@{[$wheel->ID]})");
+        Bot::Net::Test->log->info("Terminating bot $bot (pid:@{[$wheel->PID]})");
         $class->waiting->{ $wheel->PID } = 1;
         $wheel->kill;
     }
