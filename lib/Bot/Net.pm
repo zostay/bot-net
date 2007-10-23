@@ -1,4 +1,4 @@
-usetstrict;
+use strict;
 use warnings;
 
 package Bot::Net;
