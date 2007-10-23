@@ -47,7 +47,7 @@ sub _search_paths {
 
     if ($ENV{BOT_NET_CONFIG_PATH}) {
         my @env_paths = split /:/, $ENV{BOT_NET_CONFIG_PATH};
-        unshift @paths, @env_paths;
+        unshift @paths, map { [ $_ ] } @env_paths;
     }
 
     return @paths;
