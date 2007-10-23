@@ -42,6 +42,28 @@ sub new {
     bless {}, $class;
 }
 
+sub _search_paths {
+    my @paths = ( [ $FindBin::Bin, '..', 'etc' ] );
+
+    if ($ENV{BOT_NET_CONFIG_PATH}) {
+        my @env_paths = split /:/, $ENV{BOT_NET_CONFIG_PATH};
+        unshift @paths, @env_paths;
+    }
+
+    return @paths;
+}
+
+sub _search_for_file {
+    my @file_path = @_;
+
+    for my $search_path (_search_paths()) {
+        my $file_name = File::Spec->catfile(@$search_path, @file_path);
+        return $file_name if -f $file_name;
+    }
+
+    return undef;
+}
+
 =head2 net [ KEY ]
 
 The main configuration file for your L<Bot::Net> application is stored in F<etc/net.yml>. This returns a single value from that file if a C<KEY> is specified or returns the entire configuration if no key is given.
@@ -66,7 +88,7 @@ Returns the path to the main configuration file for your L<Bot::Net> application
 sub net_file {
     my $self = shift;
 
-    return File::Spec->catfile($FindBin::Bin, '..', 'etc', 'net.yml');
+    return _search_for_file('net.yml');
 }
 
 =head2 load_config TYPE NAME
@@ -134,8 +156,7 @@ sub server_file {
     my @path = split /::/, $name;
     $path[ $#path ] .= '.yml';
 
-    return File::Spec->catfile(
-        $FindBin::Bin, '..', 'etc', 'server', @path);
+    return _search_for_file('server', @path);
 }
 
 =head2 server NAME
@@ -167,7 +188,7 @@ sub bot_file {
     my @path = split /::/, $name;
     $path[ $#path ] .= '.yml';
 
-    return File::Spec->catfile($FindBin::Bin, '..', 'etc', 'bot', @path);
+    return _search_for_file('bot', @path);
 }
 
 =head2 bot NAME
@@ -185,6 +206,44 @@ sub bot {
 
     return $self->{bot}{$name};
 }
+
+=head1 CONFIGURATION FILE LOCATIONS
+
+=head2 CONFIGURATION DIRECTORIES
+
+L<Bot::Net> will search for configuration files in the following places (and in the following order). The first file found according to this order will be used.
+
+=over
+
+=item 1.
+
+If the environment variable C<BOT_NET_CONFIG_PATH> is set. It is assumed to be a list of one or more paths (separated by colons) containing the names of the directories to search for configuration files. The directories will be searched in the order given in the variable.
+
+=item 2.
+
+The program will look for the binary file (using L<FindBin>) that was executed (probably F<bin/botnet>) and find the F<etc> directory one level above the directory containing the script. For example, if you're running your bot net from F</home/sterling/MyNet/bin/botnet>, it would look in F</home/sterling/MyNet/etc> for your configuration files.
+
+=back
+
+=head2 CONFIGURATION FILES
+
+Within the directory found, the files will be named as follows:
+
+=head3 PRIMARY BOT NET CONFIGURATION
+
+The F<net.yml> file must be found in this directory. 
+
+=head3 SERVER CONFIGURATION
+
+Server config files will be found in a subdirectory named F<server> and then subdirectories based upon the name of the server. 
+
+For example, a server package named C<MyNet::Server::Foo::Bar::Master> would find it's configuration file under F<server/Foo/Bar/Master.yml>.
+
+=head3 BOT CONFIGURATION
+
+Bot configuration files are in the subdirectory named F<bot> and then subdirectories based upon the name of the bot. 
+
+For example, a bot package named C<MyNet::Bot::Foo::Bar::ChanOp> would find it's configuration file under F<bot/Foo/Bar/ChanOp.yml>.
 
 =head1 AUTHORS
 
