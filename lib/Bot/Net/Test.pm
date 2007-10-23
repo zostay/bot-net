@@ -172,7 +172,7 @@ sub run_test {
 
     {
         no strict 'refs';
-        ${ $test . '::CONFIG' } = $config;
+        ${ $test . '::CONFIG' } ||= $config;
     }
 
     Bot::Net::Test->log->info("Starting test");
