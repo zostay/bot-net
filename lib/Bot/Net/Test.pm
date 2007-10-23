@@ -9,6 +9,7 @@ use Bot::Net::Mixin;
 
 use Config;
 use File::Spec;
+use FindBin;
 use Hash::Merge ();
 use POE qw/ Wheel::Run /;
 
@@ -201,6 +202,9 @@ sub _run_that {
 
     sub {
         $ENV{PERL5LIB} = join ':', @INC;
+        $ENV{BOT_NET_CONFIG_PATH} = File::Spec->catfile(
+            $FindBin::Bin, '..', 't', 'etc'
+        );
         exec(@program);
     };
 }
