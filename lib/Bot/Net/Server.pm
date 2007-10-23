@@ -174,17 +174,6 @@ This is called synchronously at the end of the L</on _stop> handler for the L<PO
 
 =head1 POE STATES
 
-=head2 on _start
-
-Handles session startup. At startup, it loads the information stored in the configuration file and then fires L</on server startup>.
-
-=cut
-
-on _start => run {
-    yield server 'startup';
-    undef;
-};
-
 =head2 on _default ARG0 .. ARGN
 
 Performs logging for the general messages that are not handled by the system.

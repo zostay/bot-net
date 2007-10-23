@@ -75,7 +75,9 @@ sub default_configuration {
 
 =head2 on _start
 
-At startup, this hanlder loads the information stored in the configuration file and configures the IRC daemon.
+Registers the server for receiving IRC server messages.
+
+If the C<auto_startup> parameter is not set to a false value, yields the L</on server start> state.
 
 =cut
 
@@ -83,10 +85,27 @@ on _start => run {
     # Start receiving server events
     post ircd => 'register';
 
-    yield 'install_auth_configuration';
-    yield 'install_operator_configuration';
-    yield 'install_listener_configuration';
-    yield 'install_peer_configuration';
+    my $auto_startup = recall [ config => 'auto_startup' ];
+    if (not defined $auto_startup or $auto_startup) {
+        yield 'server_start';
+    }
+};
+
+=head2 on server start
+
+This state is activated automatically if the C<auto_startup> parameter is not set to false. Otherwise, it can be used to install the auth configuration (L</on install_auth_configuration>), install the operator configuraiton (L</on install_operator_configuration>), install the listener configuration (L</on install_listener_configuration>), and install the peer configuration (L</on install_peer_configuration>).
+
+It ends by yielding the C<on server startup> state.
+
+=cut
+
+on server_start => run {
+    call get SESSION, 'install_auth_configuration';
+    call get SESSION, 'install_operator_configuration';
+    call get SESSION, 'install_listener_configuration';
+    call get SESSION, 'install_peer_configuration';
+
+    yield 'server_startup';
 };
 
 =head2 on install_auth_configuration
