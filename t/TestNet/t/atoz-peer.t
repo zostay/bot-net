@@ -14,6 +14,21 @@ Bot::Net::Test->start_server('PeerBotted');
 
 on bot connected => run {
     yield 'something_happened';
+    yield 'wait_for_atoz';
+};
+
+on wait_for_atoz => run {
+    my $irc = recall 'irc';
+    my $log = recall 'log';
+
+    unless (grep { $_ eq 'AtoZ' } $irc->channel_list('#TestNet')) {
+        $log->warn("Still haven't seen AtoZ; waiting another half-second.");
+        delay wait_for_atoz => 0.5;
+        return;
+    }
+
+    yield 'something_happened';
+
     for ( 1 .. 26 ) {
         yield send_to => AtoZ => 'something';
     }

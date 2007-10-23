@@ -192,6 +192,46 @@ on install_peer_configuration => run {
    }
 };
 
+=head2 on ircd_socketerr
+
+This may be received when a peer connection fails. When that happens, this will attempt to reestablish a connection between peers.
+
+=cut
+
+on ircd_socketerr => run {
+    my $args = get ARG0;
+    my $name = $args->{name};
+
+    my $log  = recall 'log';
+
+    my $peers = recall [ config => 'peers' ];
+    for my $peer (@$peers) {
+
+        # Do we know about it? If so, pause a few seconds and try again...
+        if ($peer->{name} eq $name) {
+            $log->error(
+                "Connecting to $name failed, will try again in 10 seconds.");
+            delay reconnect_to_peer => 10, $peer;
+        }
+    }
+};
+
+=head2 on reconnect_to_peer PEER
+
+When L</on ircd_socketerr> is received, this is called to attempt a reconnect.
+
+=cut
+
+on reconnect_to_peer => run {
+    my $peer = get ARG0;
+
+    my $log  = recall 'log';
+    my $ircd = recall 'ircd';
+
+    $log->warn("Attempting to reconnect to peer named $peer->{name}.");
+    $ircd->add_peer( %$peer );
+};
+
 =head2 on server quit
 
 This causes the IRC daemon to close all connections and stop listening.

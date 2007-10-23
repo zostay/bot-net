@@ -169,6 +169,7 @@ sub run_test {
 
     # XXX This is a hack, I need to find a better way...
     $config->{auto_connect} = 0;
+    $config->{auto_startup} = 0;
 
     {
         no strict 'refs';
@@ -343,7 +344,7 @@ on spawn_all_bots_after_servers => run {
 
 =head2 on connect_after_bots
 
-Checks to see if all the bots have spawned yet. If they have, then this emits C<bot connect> to connect the test bot (assuming the test is a test bot). If all the bots have not yet connected, then this will re-emit L</on connect_after_bots> to try again in another time slice.
+Checks to see if all the bots have spawned yet. If they have, then this emits C<bot connect> to connect the test bot (assuming the test may be a test bot) and C<server start> to start the server (assuming the test may be a server). If all the bots have not yet connected, then this will re-emit L</on connect_after_bots> to try again in another time slice.
 
 =cut
 
@@ -365,6 +366,7 @@ on connect_after_bots => run {
         return;
     }
 
+    yield 'server_start';
     yield 'bot_connect';
 };
 
