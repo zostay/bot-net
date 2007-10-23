@@ -13,6 +13,7 @@ Bot::Net::Test->start_server('Main');
 Bot::Net::Test->start_server('PeerBotted');
 
 on bot connected => run {
+    yield 'something_happened';
     for ( 1 .. 26 ) {
         yield send_to => AtoZ => 'something';
     }
@@ -26,6 +27,8 @@ on bot message_to_me => run {
     is($event->message, $alpha_expected);
 
     remember alpha => ++$alpha_expected;
+
+    yield 'something_happened';
 
     if ($alpha_expected eq 'Z') {
         yield bot quit => 'Test finished.';
