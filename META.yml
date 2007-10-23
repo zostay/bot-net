@@ -29,4 +29,4 @@ requires:
   UNIVERSAL::require: 0
   YAML::Syck: 0
 tests: t/*.t t/*/t/*.t
-version: 0.0.4
+version: 0.1.0

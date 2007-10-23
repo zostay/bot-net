@@ -35,6 +35,7 @@ META.yml
 t/00-dependencies.t
 t/02-pod-coverage.t
 t/02-pod.t
+t/03-util.t
 t/lib/Bot/Net/SubTest.pm
 t/TestNet/bin/botnet
 t/TestNet/etc/bot/AtoZ.yml
@@ -42,13 +43,18 @@ t/TestNet/etc/bot/Count.yml
 t/TestNet/etc/log4perl.conf
 t/TestNet/etc/net.yml
 t/TestNet/etc/server/Main.yml
+t/TestNet/etc/server/PeerBotted.yml
 t/TestNet/etc/server/ServerBotted.yml
 t/TestNet/lib/TestNet/Bot/AtoZ.pm
 t/TestNet/lib/TestNet/Bot/Count.pm
 t/TestNet/lib/TestNet/Server/Main.pm
+t/TestNet/lib/TestNet/Server/PeerBotted.pm
 t/TestNet/lib/TestNet/Server/ServerBotted.pm
 t/TestNet/Makefile.PL
+t/TestNet/t/atoz-peer.t
 t/TestNet/t/atoz.t
 t/TestNet/t/count.t
+t/TestNet/t/etc/bot/Count.yml
+t/TestNet/t/etc/server/Main.yml
 t/TestNet/var/bot/.keep
 t/TestNet/var/server/.keep
