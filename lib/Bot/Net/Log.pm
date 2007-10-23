@@ -8,8 +8,6 @@ use FindBin;
 use Log::Log4perl;
 use Readonly;
 
-Readonly our $CONFIG_FILE => "$FindBin::Bin/../etc/log4perl.conf";
-
 =head1 NAME
 
 Bot::Net::Log - logger for your bot net
@@ -44,7 +42,9 @@ sub new {
     STDOUT->autoflush(1);
     STDERR->autoflush(1);
 
-    Log::Log4perl::init($CONFIG_FILE);
+    my $config_file = Bot::Net::Config::_search_for_file('log4perl.conf');
+
+    Log::Log4perl::init($config_file);
     bless {}, $class;
 }
 
