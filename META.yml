@@ -1,8 +1,13 @@
+--- 
 abstract: run your very own IRC bot net
-author: Andrew Sterling Hanenkamp C<< <hanenkamp@cpan.org> >>
+author: 
+  - Andrew Sterling Hanenkamp C<< <hanenkamp@cpan.org> >>
 distribution_type: module
-generated_by: Module::Install version 0.64
+generated_by: Module::Install version 0.68
 license: perl
+meta-spec: 
+  url: http://module-build.sourceforge.net/META-spec-v1.3.html
+  version: 1.3
 name: Bot-Net
 no_index: 
   directory: 
