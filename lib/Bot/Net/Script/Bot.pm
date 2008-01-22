@@ -5,7 +5,9 @@ package Bot::Net::Script::Bot;
 use base qw/ App::CLI::Command Class::Accessor::Fast /;
 
 use Bot::Net;
+use File::Basename;
 use File::Copy;
+use File::Path;
 use File::Spec;
 use FindBin;
 use UNIVERSAL::require;
@@ -117,6 +119,8 @@ sub run {
 
 sub _create_bot_module {
     my $self = shift;
+
+    mkpath(dirname($self->bot_file));
     
     open my $botmod, '>', $self->bot_file
         or die "Cannot write to @{[$self->bot_file]}: $!";
@@ -171,6 +175,7 @@ sub _create_bot_config {
 
     if ($self->{clone} and -f $self->clone_conf) {
         print "Copying ",$self->clone_conf," to ",$self->bot_conf,"...\n";
+        mkpath(dirname($self->bot_conf));
         copy($self->clone_conf, $self->bot_conf);
     }
 
@@ -187,6 +192,7 @@ sub _create_bot_config {
 
         my $bot_conf = Hash::Merge::merge( @configs );
 
+        mkpath(dirname($self->bot_conf));
         YAML::Syck::DumpFile( $self->bot_conf, $bot_conf );
     }
 }
